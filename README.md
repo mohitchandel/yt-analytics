@@ -1,36 +1,191 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YouTube Analytics Dashboard
+
+A Next.js application that authenticates with Google OAuth and displays YouTube Analytics data using the YouTube Analytics API and YouTube Data API.
+
+## Table of Contents
+
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+  - [1. Clone and Install](#1-clone-and-install)
+  - [2. Google Cloud Console Setup](#2-google-cloud-console-setup)
+  - [3. Environment Variables](#3-environment-variables)
+  - [4. Run the Application](#4-run-the-application)
+- [Project Structure](#project-structure)
+- [Common Issues and Solutions](#common-issues-and-solutions)
+- [API Reference](#api-reference)
+- [Contributing](#contributing)
+
+## Features
+
+- Google OAuth authentication
+- YouTube Analytics data visualization
+- Channel statistics
+- Historical data viewing
+- Responsive design
+- Error handling and loading states
+
+## Prerequisites
+
+- Node.js 16.x or later
+- A Google Account
+- A YouTube channel (for testing analytics)
+- npm or yarn package manager
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone and Install
+
+```bash
+# Clone the repository
+git clone https://github.com/mohitchandel/yt-analytics.git
+cd yt-analytic
+
+# Install dependencies
+npm install
+# or
+yarn install
+```
+
+Required dependencies:
+
+```json
+{
+  "dependencies": {
+    "next": "^13.0.0",
+    "next-auth": "^4.22.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "googleapis": "^118.0.0",
+    "recharts": "^2.5.0"
+  }
+}
+```
+
+### 2. Google Cloud Console Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable required APIs:
+
+   - Navigate to "APIs & Services" > "Library"
+   - Search for and enable these APIs:
+     - YouTube Data API v3
+     - YouTube Analytics API
+     - YouTube Reporting API
+
+4. Configure OAuth Consent Screen:
+
+   - Go to "APIs & Services" > "OAuth consent screen"
+   - Choose "External" user type
+   - Fill in required information:
+     - App name
+     - User support email
+     - Developer contact information
+   - Add scopes:
+     ```
+     https://www.googleapis.com/auth/youtube.readonly
+     https://www.googleapis.com/auth/yt-analytics.readonly
+     https://www.googleapis.com/auth/youtube
+     ```
+   - Add test users (required for testing)
+
+5. Create OAuth 2.0 Credentials:
+   - Go to "APIs & Services" > "Credentials"
+   - Click "Create Credentials" > "OAuth 2.0 Client IDs"
+   - Application type: "Web application"
+   - Add authorized JavaScript origins:
+     ```
+     http://localhost:3000
+     ```
+   - Add authorized redirect URIs:
+     ```
+     http://localhost:3000/api/auth/callback/google
+     ```
+   - Copy your Client ID and Client Secret
+
+### 3. Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key # Generate a random string
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+```
+
+### 4. Run the Application
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000` in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+├── app/
+│   ├── api/
+|   |   |-- video-analytics/[videoid]
+│   │   |   └── route.ts
+|   |   |-- youtube-videos/
+│   │   |   └── route.ts
+│   │   ├── auth/
+│   │   │   └── [...nextauth]/
+│   │   │       └── route.ts
+│   │   └── youtube-analytics/
+│   │       └── route.ts
+│   ├── components/
+│   │   ├── AuthButton.tsx
+│   │   └── VideoAnalytics.tsx
+│   │   └── YouTubeAnalytics.tsx
+│   ├── providers.tsx
+│   ├── layout.tsx
+│   └── page.tsx
+├── types/
+│   └── next-auth.d.ts
+├── .env.local
+└── next.config.js
+```
 
-## Learn More
+## Common Issues and Solutions
 
-To learn more about Next.js, take a look at the following resources:
+### 1. "Google hasn't verified this app" Warning
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Solution**: This is normal during development
+- Click "Continue" or "Advanced" > "Go to {Your App Name} (unsafe)"
+- For production, complete Google's verification process
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 2. "Access blocked: localhost has not completed the Google verification process"
 
-## Deploy on Vercel
+- **Solution**: Add your Google account as a test user
+- Go to Google Cloud Console > OAuth consent screen
+- Add your email under "Test users"
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 3. "Failed to fetch YouTube analytics"
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Solutions**:
+  - Ensure YouTube Data API v3 is enabled
+  - Check if the user has a YouTube channel
+  - Verify all required scopes are added
+  - Check if access token is present in session
+
+### 4. "React Context is unavailable in Server Components"
+
+- **Solution**: Mark components using Next-Auth hooks as Client Components
+- Add 'use client' directive at the top of components using:
+  - useSession
+  - signIn
+  - signOut
+
+### 5. "Unauthorized - No access token found"
+
+- **Solutions**:
+  - Ensure authOptions is properly exported and imported
+  - Verify session callbacks are correctly configured
+  - Check if user is properly authenticated
+  - Confirm environment variables are set correctly
