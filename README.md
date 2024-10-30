@@ -13,8 +13,7 @@ A Next.js application that authenticates with Google OAuth and displays YouTube 
   - [4. Run the Application](#4-run-the-application)
 - [Project Structure](#project-structure)
 - [Common Issues and Solutions](#common-issues-and-solutions)
-- [API Reference](#api-reference)
-- [Contributing](#contributing)
+
 
 ## Features
 
